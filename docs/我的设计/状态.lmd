@@ -1,0 +1,161 @@
+你的直觉非常敏锐。**宏观状态的严格线性特性（`IDLE → DYING → STRUGGLING → DEAD → DONE`）确实强烈指向纯协程实现**。让我从几个关键角度分析为什么协程在这种场景下比状态机更自然。
+
+### 一、线性流程的表达力对比
+
+**状态机实现**：
+```lua
+-- 需要定义多个回调，并手动管理状态转移
+function onenterDying(self)
+    StartDeathAnimation()
+    return ASYNC
+end
+function onleaveDying(self)
+    CleanupDeath()
+end
+function onenterStruggling(self)
+    StartCrawl()
+    return ASYNC
+end
+-- ... 还有多个回调
+```
+
+**纯协程实现**：
+```lua
+function RagdollLifecycle(physRag, ctx)
+    -- DYING 阶段
+    local animRag = CreateAnimRag()
+    PlayDeathAnimation(animRag, ctx.animName)
+    WaitForAnimation(animRag, ctx.duration)
+    CleanupDeath()
+    
+    -- 判断是否进入 STRUGGLING
+    if not ctx.canStruggle then
+        goto dead
+    end
+    
+    -- STRUGGLING 阶段（内部包含子状态循环）
+    while not ctx.overkill do
+        local subState = DetermineSubState(ctx)
+        if subState == "crawl" then
+            PlayCrawlAnimation()
+        elseif subState == "writhe" then
+            PlayWritheAnimation()
+        elseif subState == "twitch" then
+            PlayTwitchAnimation()
+        elseif subState == "revive" then
+            ReviveAndRemove()
+            return  -- 直接结束，不再执行后续
+        end
+        coroutine.yield()
+    end
+    
+    ::dead::
+    -- DEAD 阶段：退出所有控制，等待尸体被清理
+    ReleaseAllControl()
+    WaitUntilRemoved(physRag)
+    
+    -- DONE：尸体被移除，协程自然结束
+end
+```
+
+**结论**：协程将整个生命周期表达为**一段连续的、带分支和循环的叙事**，而状态机则将其拆散为多个孤立的片段。对于线性推进的流程，协程的可读性远超状态机。
+
+### 二、子状态管理的复杂度
+
+在 `STRUGGLING` 阶段，子状态（爬行、扭动、抽搐）可以任意切换。状态机需要：
+- 为每个子状态定义 `onenter`/`onleave`
+- 维护子状态转移逻辑
+- 处理子状态切换时的资源清理
+
+协程只需一个 **`while` 循环 + `if/elseif` 分支**：
+```lua
+while inStruggling do
+    local nextSub = EvaluateSubState(ctx)
+    if nextSub == "revive" then
+        break  -- 跳出循环，进入复活流程
+    end
+    PlaySubAnimation(nextSub)
+    coroutine.yield()
+end
+```
+
+子状态切换的本质是**动画序列的切换**，协程的线性控制流完美匹配这种“循环播放不同片段”的模式。
+
+### 三、资源清理的确定性
+
+状态机需要在 `onleave` 中显式清理资源，且必须保证每个状态都正确实现。协程可以通过 **`xpcall` + `finally` 模式** 确保资源一定被释放：
+
+```lua
+local animRag = nil
+local cleanup = function()
+    if animRag then animRag:Remove() end
+    ReleasePhysicsControl()
+end
+
+local ok, err = xpcall(function()
+    animRag = CreateAnimRag()
+    -- ... 主流程
+end, debug.traceback)
+
+cleanup()
+if not ok then ErrorNoHalt(err) end
+```
+
+无论协程是正常结束、被 `overkill` 中断、还是因错误崩溃，`cleanup` 都会执行。这在状态机中需要跨多个状态手动管理，极易遗漏。
+
+### 四、中断处理的优雅性
+
+当 `overkill` 事件发生时（血量归零），协程可以通过一个简单的**共享标志**实现立即中断：
+
+```lua
+-- 主协程
+while not ctx.overkill do
+    -- 正常循环
+end
+-- 检测到 overkill，跳出循环，执行后续 DEAD 流程
+```
+
+外部只需设置 `ctx.overkill = true`，协程会在下一帧自动跳出。状态机则需要：
+1. 定义 `overkill` 事件。
+2. 确保当前状态能响应该事件。
+3. 在事件处理中清理当前状态资源并切换到 `DEAD`。
+4. 如果子状态内部有循环，还需要额外机制中断。
+
+协程将中断处理**降维为变量检查**，大幅简化逻辑。
+
+### 五、最终建议：采用纯协程 + 简单调度器
+
+| 组件 | 职责 |
+|------|------|
+| **生命周期协程** | 每个布娃娃一个，线性表达从 `DYING` 到 `DONE` 的完整流程。 |
+| **子状态协程**（可选） | 如果需要更细粒度控制，可将每个子动画播放封装为独立协程，由主协程 `yield` 等待。 |
+| **调度器** | 在 `Tick` 中统一恢复所有协程（你已有标签调度器）。 |
+| **外部事件注入** | 通过修改协程可见的共享表 `ctx`（如 `ctx.overkill = true`）来影响协程行为。 |
+
+**为什么不用状态机？**
+- 宏观流程是**强线性、不可逆**的，状态机的核心优势（任意状态间跳转）完全用不上。
+- 子状态切换虽多，但本质是**循环内分支**，协程的 `while` 比状态机更直观。
+- 状态机会引入大量样板代码（每个状态的 `onenter`/`onleave`），而协程将所有逻辑集中在一段代码中，便于理解和维护。
+
+**架构简图**：
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      Tick 调度器                              │
+│  遍历所有 ragdoll 的协程，调用 coroutine.resume                │
+└────────────────────────────┬────────────────────────────────┘
+                             │
+                             ▼
+┌─────────────────────────────────────────────────────────────┐
+│              每个 ragdoll 一个生命周期协程                     │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │ 1. DYING:  播放死亡动画，等待                          │   │
+│  │ 2. STRUGGLING: while循环，切换子动画                   │   │
+│  │ 3. DEAD:    释放控制，等待尸体移除                      │   │
+│  │ 4. DONE:    清理资源，协程结束                         │   │
+│  └──────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘
+```
+
+这个架构与你之前探索的“骨骼驱动协程”完美兼容：生命周期协程负责宏观调度，内部启动骨骼驱动协程组来实际控制物理。两者都是协程，风格统一，调度器复用。
+
+**结论：放弃状态机，拥抱纯协程。** 对于你描述的这种线性推进、子状态循环、可中断的动画生命周期，协程是最简洁、最强大的表达方式。

@@ -53,10 +53,10 @@ local function applyBoneTransform(animRag, physRag)
             delta            = 0.15,      -- 时间步长（通常来自 PhysicsSimulate）
             pos              = targetPos, -- 目标世界位置
             angle            = targetAng, -- 目标世界角度
-            maxangular       = 512,       -- 最大角力
-            maxangulardamp   = 256,       -- 开始阻尼旋转的力/速度阈值
-            maxspeed         = 512,       -- 最大线性力
-            maxspeeddamp     = 256,       -- 开始阻尼线性运动的力/速度阈值
+            maxangular       = 256,       -- 最大角力
+            maxangulardamp   = 128,       -- 开始阻尼旋转的力/速度阈值
+            maxspeed         = 256,       -- 最大线性力
+            maxspeeddamp     = 128,       -- 开始阻尼线性运动的力/速度阈值
             dampfactor       = 1.0,       -- 达到最大值时的阻尼百分比（1.0 = 无额外阻尼）
             teleportdistance = 0          -- 超过此距离直接传送（0 禁用传送）
         }
@@ -68,19 +68,18 @@ local co = nil
 
 hook.Add("CreateEntityRagdoll", "TestCreateEntityRagdoll", function(owner, physRag)
     co = coroutine.create(function()
-        print("step1")
-
         -- 1. 创建动画实体并对齐到物理布娃娃
         local animRag = createAnimRag(physRag)
 
         -- 2. 暂时冻结物理布娃娃，防止外力干扰对齐姿态
         disableMotion(physRag)
         coroutine.yield()
-        print("step2")
 
         -- 3. 恢复物理模拟，并开始播放随机死亡动画
         enableMotion(physRag)
-        local animName = getAnimation()
+        -- local animName = getAnimation()
+        local animName = "bd_death_rightleg_single_02"
+
         animRag:Fire("SetAnimation", animName, 0)
 
         -- 4. 获取动画持续时间

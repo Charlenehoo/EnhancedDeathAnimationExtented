@@ -1,12 +1,12 @@
 local bodyPartToAnimationsMap = include("bodyPartToAnimationsMap.lua")
 
 local function getAnimation()
-    local all_animations = {}
+    local allAnimations = {}
 
     local function collect(t)
         for _, v in pairs(t) do
             if type(v) == "string" then
-                table.insert(all_animations, v)
+                table.insert(allAnimations, v)
             elseif type(v) == "table" then
                 collect(v)
             end
@@ -15,11 +15,15 @@ local function getAnimation()
 
     collect(bodyPartToAnimationsMap)
 
-    if #all_animations == 0 then
+    if #allAnimations == 0 then
         return nil
     end
 
-    return all_animations[math.random(#all_animations)]
+    local chosenAnimation = allAnimations[math.random(#allAnimations)]
+
+    print("chosenAnimation is " .. chosenAnimation)
+
+    return chosenAnimation
 end
 
 return getAnimation
