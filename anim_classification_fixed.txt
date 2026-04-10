@@ -1,0 +1,305 @@
+
+[bd_back] (12 files)
+  16back.smd
+  bd_death_slasher_back.smd
+  ex_demo_backstab.smd
+  ex_engineer_backstab.smd
+  ex_heavy_backstab.smd
+  ex_medic_backstab.smd
+  ex_mix_flying_back.smd
+  ex_pyro_backstab.smd
+  ex_scout_backstab.smd
+  ex_sniper_backstab.smd
+  ex_soldier_backstab.smd
+  ex_spy_backstab.smd
+
+[bd_head] (40 files)
+  16head.smd
+  bd_death_head_01.smd
+  bd_death_head_02.smd
+  bd_death_head_03.smd
+  bd_death_head_04.smd
+  bd_death_head_05.smd
+  bd_death_head_07.smd
+  bd_death_head_08.smd
+  bd_death_head_multi_01.smd
+  bd_death_head_multi_02.smd
+  bd_death_head_multi_03.smd
+  bd_death_head_short_01.smd
+  bd_death_head_short_02.smd
+  bd_death_head_short_03.smd
+  bd_death_head_single_01.smd
+  bd_death_head_single_02.smd
+  bd_death_head_single_03.smd
+  ex_demo_headshot.smd
+  ex_engineer_headshot.smd
+  ex_headshotback.smd
+  ex_headshotfront.smd
+  ex_heavy_headshot.smd
+  ex_medic_headshot.smd
+  ex_mix_falling_back_2_headshot.smd
+  ex_mix_headshot_1.smd
+  ex_mix_headshot_10.smd
+  ex_mix_headshot_11.smd
+  ex_mix_headshot_2.smd
+  ex_mix_headshot_3.smd
+  ex_mix_headshot_4.smd
+  ex_mix_headshot_5.smd
+  ex_mix_headshot_6.smd
+  ex_mix_headshot_8.smd
+  ex_mix_headshot_9.smd
+  ex_mix_shot_in_back_headshot.smd
+  ex_pyro_headshot.smd
+  ex_scout_headshot.smd
+  ex_sniper_headshot.smd
+  ex_soldier_headshot.smd
+  ex_spy_headshot.smd
+
+[bd_larm] (12 files)
+  bd_death_leftarm_multi_01.smd
+  bd_death_leftarm_multi_02.smd
+  bd_death_leftarm_multi_03.smd
+  bd_death_leftarm_multi_04.smd
+  bd_death_leftarm_short_01.smd
+  bd_death_leftarm_short_02.smd
+  bd_death_leftarm_short_03.smd
+  bd_death_leftarm_single_01.smd
+  bd_death_leftarm_single_02.smd
+  bd_death_leftarm_single_03.smd
+  ex_mix_hit_Left_shoulder.smd
+  ex_mix_hit_leftarm_2.smd
+
+[bd_lleg] (13 files)
+  bd_death_leftleg_long_01.smd
+  bd_death_leftleg_long_02.smd
+  bd_death_leftleg_short_01.smd
+  bd_death_leftleg_short_02.smd
+  bd_death_leftleg_short_03.smd
+  bd_death_leftleg_short_04.smd
+  bd_death_leftleg_short_05.smd
+  bd_death_leftleg_short_06.smd
+  bd_death_leftleg_short_07.smd
+  bd_death_leftleg_short_08.smd
+  bd_death_legs_01.smd
+  ex_mix_groin_hit_left_leg.smd
+  ex_mix_hit_left_leg.smd
+
+[bd_neck] (4 files)
+  bd_death_neck_short_01.smd
+  bd_death_neck_short_02.smd
+  bd_death_neck_short_03.smd
+  bd_death_neck_short_04.smd
+
+[bd_pelvis] (1 files)
+  16gutshot.smd
+
+[bd_rarm] (12 files)
+  bd_death_rightarm_01.smd
+  bd_death_rightarm_02.smd
+  bd_death_rightarm_multi_01.smd
+  bd_death_rightarm_multi_02.smd
+  bd_death_rightarm_single_01.smd
+  bd_death_rightarm_single_02.smd
+  bd_death_rightarm_single_03.smd
+  bd_death_rightarm_single_04.smd
+  ex_mix_flying_forward_rightarm.smd
+  ex_mix_right_arm.smd
+  ex_mix_right_arm_3.smd
+  ex_mix_rightarm_2.smd
+
+[bd_rleg] (11 files)
+  bd_death_rightleg_multi_01.smd
+  bd_death_rightleg_multi_02.smd
+  bd_death_rightleg_multi_03.smd
+  bd_death_rightleg_short_01.smd
+  bd_death_rightleg_short_02.smd
+  bd_death_rightleg_single_01.smd
+  bd_death_rightleg_single_02.smd
+  bd_death_rightleg_single_03.smd
+  bd_death_rightleg_single_04.smd
+  bd_death_rightleg_single_05.smd
+  ex_mix_groin_hit_right_leg.smd
+
+[bd_torso] (43 files)
+  16death1.smd
+  16death2.smd
+  16death3.smd
+  16forward.smd
+  16left.smd
+  16right.smd
+  bd_death_stomach_multi_01.smd
+  bd_death_stomach_short_01.smd
+  bd_death_stomach_short_02.smd
+  bd_death_stomach_single_01.smd
+  bd_death_stomach_single_02.smd
+  bd_death_torso_long_01.smd
+  bd_death_torso_long_02.smd
+  bd_death_torso_long_03.smd
+  bd_death_torso_short_01.smd
+  bd_death_torso_short_02.smd
+  bd_death_torso_short_03.smd
+  bd_death_torso_short_04.smd
+  bd_death_torso_short_05.smd
+  bd_death_torso_short_06.smd
+  bd_death_torso_short_07.smd
+  bd_death_torso_short_08.smd
+  bd_death_torso_short_09.smd
+  bd_death_torso_short_10.smd
+  bd_death_torso_short_11.smd
+  bd_death_torso_short_12.smd
+  bd_death_torso_short_13.smd
+  bd_death_torso_short_14.smd
+  bd_death_torso_short_15.smd
+  bd_death_torso_short_16.smd
+  bd_death_torso_short_17.smd
+  bd_death_torso_short_18.smd
+  bd_death_torso_short_19.smd
+  bd_death_torso_short_20.smd
+  bd_death_torso_short_21.smd
+  cod_1_torso_1.smd
+  cod_1_torso_2.smd
+  cod_1_torso_3.smd
+  cod_1_torso_4.smd
+  cod_1_torso_5.smd
+  cod_1_torso_6.smd
+  cod_1_torso_7.smd
+  ex_mix_hit_gut.smd
+
+[club] (7 files)
+  bd_death_slasher_front.smd
+  bd_death_slasher_left.smd
+  bd_death_slasher_right.smd
+  club1.smd
+  club2.smd
+  club3.smd
+  club4.smd
+
+[crawling] (21 files)
+  crawling1.smd
+  crawling1_f.smd
+  crawling2.smd
+  crawling3.smd
+  crawling3_f.smd
+  crawling4.smd
+  crawling5.smd
+  crawling5_f.smd
+  crawling6.smd
+  crawling6_f.smd
+  crawling7.smd
+  crawling7_f.smd
+  crawling_ally_revive.smd
+  crawling_down_getup1.smd
+  crawling_down_getup2.smd
+  crawling_down_idle.smd
+  crawling_self_revive1.smd
+  crawling_self_revive2.smd
+  crawling_up_getup1.smd
+  crawling_up_getup2.smd
+  crawling_up_idle.smd
+
+[crouch_die] (1 files)
+  16crouch_die.smd
+
+[dying] (37 files)
+  Death_01.smd
+  Death_02a.smd
+  Death_02c.smd
+  Death_03.smd
+  Death_05.smd
+  Death_06.smd
+  Death_07.smd
+  Death_08.smd
+  Death_08b.smd
+  Death_09.smd
+  Death_10ab.smd
+  Death_10b.smd
+  Death_10c.smd
+  Death_11_01a.smd
+  Death_11_01b.smd
+  Death_11_02a.smd
+  Death_11_02b.smd
+  Death_11_02c.smd
+  Death_11_02d.smd
+  Death_11_03a.smd
+  Death_11_03b.smd
+  Death_11_03c.smd
+  bd_death_leg_01.smd
+  bd_death_leg_02.smd
+  bd_death_leg_03.smd
+  bd_death_leg_04.smd
+  bd_death_leg_05.smd
+  bd_death_leg_06.smd
+  bd_death_leg_07.smd
+  bd_death_leg_08.smd
+  dying1.smd
+  dying2.smd
+  dying3.smd
+  dying4.smd
+  dying5.smd
+  dying6.smd
+  dying7.smd
+
+[exp] (15 files)
+  DeathExplosion_01.smd
+  DeathExplosion_02.smd
+  DeathExplosion_03.smd
+  DeathExplosion_04.smd
+  DeathExplosion_05.smd
+  DeathExplosion_06.smd
+  DeathExplosion_07.smd
+  DeathExplosion_08.smd
+  ex_shotgunback1.smd
+  ex_shotgunback2.smd
+  ex_shotgunback3.smd
+  ex_shotgunback4.smd
+  ex_shotgunback5.smd
+  ex_shotgunback6.smd
+  ex_shotgunback7.smd
+
+[fire] (11 files)
+  bd_death_fire1.smd
+  ex_engineer_burn.smd
+  ex_heavy_burn.smd
+  ex_medic_burn.smd
+  ex_movingonfire.smd
+  ex_runonfire1.smd
+  ex_runonfire2.smd
+  ex_scout_burn.smd
+  ex_sniper_burn.smd
+  ex_soldier_burn.smd
+  ex_spy_burn.smd
+
+[moving] (26 files)
+  DeathRunning_01.smd
+  DeathRunning_03.smd
+  DeathRunning_04.smd
+  DeathRunning_05.smd
+  DeathRunning_06.smd
+  DeathRunning_07.smd
+  DeathRunning_08.smd
+  DeathRunning_09.smd
+  DeathRunning_10.smd
+  DeathRunning_11a.smd
+  DeathRunning_11b.smd
+  DeathRunning_11c.smd
+  DeathRunning_11d.smd
+  DeathRunning_11e.smd
+  DeathRunning_11f.smd
+  DeathRunning_11g.smd
+  DeathRunning_12.smd
+  DeathRunning_13.smd
+  DeathRunning_14.smd
+  DeathRunning_15.smd
+  DeathRunning_16.smd
+  ex_mix_running_faceplant.smd
+  ex_mix_running_roll.smd
+  ex_mix_running_roll_2.smd
+  ex_mix_running_roll_3.smd
+  ex_mix_running_trip.smd
+
+[ragdoll] (1 files)
+  ragdoll.smd
+
+[writhing] (2 files)
+  writhing1.smd
+  writhing2.smd

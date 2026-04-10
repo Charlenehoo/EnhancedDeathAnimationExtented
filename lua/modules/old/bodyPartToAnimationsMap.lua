@@ -281,6 +281,43 @@ local bodyPartToAnimationsMap = {
         "ex_mix_hit_gut",
         "16gutshot",
         "16gutshot"
+    },
+    -- 新增爬行系列（保持原有结构，在最后添加新分类）
+    crawling = {
+        "crawling1",
+        "crawling1_f",
+        "crawling2",
+        "crawling3",
+        "crawling3_f",
+        "crawling4",
+        "crawling5",
+        "crawling5_f",
+        "crawling6",
+        "crawling6_f",
+        "crawling7",
+        "crawling7_f",
+        "crawling_ally_revive",
+        "crawling_down_getup1",
+        "crawling_down_getup2",
+        "crawling_down_idle",
+        "crawling_self_revive1",
+        "crawling_self_revive2",
+        "crawling_up_getup1",
+        "crawling_up_getup2",
+        "crawling_up_idle"
+    },
+    -- 新增扭曲系列
+    writhing = {
+        "writhing1",
+        "writhing2"
+    },
+    -- 新增布娃娃物理
+    ragdoll = {
+        "ragdoll"
+    },
+    -- 新增蹲下死亡
+    crouch_die = {
+        "16crouch_die"
     }
 }
 
