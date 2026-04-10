@@ -44,6 +44,11 @@ local eventMap = {}
 private.errorHandler = function(err, co, blackboard)
     local coStr = tostring(co):match("thread: (%x+)") or "unknown"
     ErrorNoHalt(string.format("[Scheduler] 协程 %s 发生错误: %s\n", coStr, tostring(err)))
+    if blackboard and type(blackboard) == "table" then
+        PrintTable(blackboard)
+    else
+        ErrorNoHalt(string.format("[Scheduler] 黑板内容: %s\n", tostring(blackboard)))
+    end
 end
 
 -- 内部函数：从所有队列中移除指定协程
@@ -89,6 +94,10 @@ local function finalizeTask(task)
     if task._finalized then return end
     task._finalized = true
 
+    -- 从所有调度队列中移除，确保不会再被恢复
+    removeFromAllQueues(task.co)
+
+    -- 调用清理回调
     if task.cleanup then
         local success, err = pcall(task.cleanup, task.co, task.blackboard)
         if not success then
@@ -179,11 +188,20 @@ local function onTick()
             if task and not task.stopped then
                 local ok, result = pcall(entry.predicate)
                 if ok and result then
+                    -- 条件满足，恢复协程
                     resumeTask(entry.co)
+                elseif not ok then
+                    -- 谓词执行出错，视为协程错误，终止该协程
+                    if private.errorHandler then
+                        private.errorHandler(result, entry.co, task.blackboard)
+                    end
+                    finalizeTask(task)
                 else
+                    -- 条件不满足，保留在队列中
                     remaining[#remaining + 1] = entry
                 end
             end
+            -- 若 task 不存在或已停止，直接丢弃
         end
         conditionList = remaining
     end
@@ -226,7 +244,6 @@ function private.Stop(co)
     if not task then return end
 
     task.stopped = true
-    removeFromAllQueues(co)
 
     if coroutine.status(co) == "suspended" then
         finalizeTask(task)
