@@ -31,8 +31,8 @@ private.tasks = setmetatable({}, { __mode = "k" })
 -- 时间等待队列（按唤醒时间升序排列）
 local timeQueue = {}
 
--- 下一帧等待队列（按目标 Tick 升序排列）
-local frameQueue = {}
+-- Tick 等待队列（按目标 Tick 升序排列）
+local tickQueue = {} -- 元素: { targetTick = number, co = thread }
 
 -- 条件等待列表
 local conditionList = {}
@@ -55,10 +55,10 @@ local function removeFromAllQueues(co)
             break
         end
     end
-    -- 帧队列（Tick 队列）
-    for i = #frameQueue, 1, -1 do
-        if frameQueue[i].co == co then
-            table.remove(frameQueue, i)
+    -- Tick 队列
+    for i = #tickQueue, 1, -1 do
+        if tickQueue[i].co == co then
+            table.remove(tickQueue, i)
             break
         end
     end
@@ -165,9 +165,9 @@ local function onTick()
         resumeTask(entry.co)
     end
 
-    -- 2. 处理 Tick 等待队列（相当于原来的 WaitForFrame）
-    while #frameQueue > 0 and frameQueue[1].targetTick <= currentTick do
-        local entry = table.remove(frameQueue, 1)
+    -- 2. 处理 Tick 等待队列
+    while #tickQueue > 0 and tickQueue[1].targetTick <= currentTick do
+        local entry = table.remove(tickQueue, 1)
         resumeTask(entry.co)
     end
 
@@ -245,6 +245,7 @@ function private.Wait(seconds)
 
     local wakeTime = getTime() + seconds
 
+    -- 按时间升序插入队列
     local inserted = false
     for i = 1, #timeQueue do
         if timeQueue[i].time > wakeTime then
@@ -260,14 +261,14 @@ function private.Wait(seconds)
     return coroutine.yield()
 end
 
-function private.WaitForFrame(frames)
-    local frames = frames or 1
-    if type(frames) ~= "number" or frames < 1 then
-        error("[Scheduler] WaitForFrame 参数必须为正整数", 2)
+function private.WaitForTick(ticks)
+    local ticks = ticks or 1
+    if type(ticks) ~= "number" or ticks < 1 then
+        error("[Scheduler] WaitForTick 参数必须为正整数", 2)
     end
 
     local co = coroutine.running()
-    if not co then error("[Scheduler] WaitForFrame 必须在协程内调用", 2) end
+    if not co then error("[Scheduler] WaitForTick 必须在协程内调用", 2) end
     local task = private.tasks[co]
     if not task then error("[Scheduler] 当前协程未由调度器管理", 2) end
 
@@ -275,19 +276,19 @@ function private.WaitForFrame(frames)
         error("[Scheduler] 协程已被停止", 2)
     end
 
-    local targetTick = getTickCount() + frames
+    local targetTick = getTickCount() + ticks
 
     -- 按目标 Tick 升序插入队列
     local inserted = false
-    for i = 1, #frameQueue do
-        if frameQueue[i].targetTick > targetTick then
-            table.insert(frameQueue, i, { targetTick = targetTick, co = co })
+    for i = 1, #tickQueue do
+        if tickQueue[i].targetTick > targetTick then
+            table.insert(tickQueue, i, { targetTick = targetTick, co = co })
             inserted = true
             break
         end
     end
     if not inserted then
-        table.insert(frameQueue, { targetTick = targetTick, co = co })
+        table.insert(tickQueue, { targetTick = targetTick, co = co })
     end
 
     return coroutine.yield()
@@ -368,10 +369,9 @@ function private.OnError(callback)
 end
 
 function private.GetVersion()
-    return private._version or "1.0.1"
+    return private._version or "1.0.2"
 end
 
-private._version = "1.0.1"
+private._version = "1.0.2"
 
--- 返回私有模块表，供 public.lua 使用
 return private
