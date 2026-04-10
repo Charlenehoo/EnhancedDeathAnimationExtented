@@ -1,123 +1,113 @@
 import os
 import re
+import json
 from collections import defaultdict
 
-# 定义匹配规则（严格按优先级顺序）
-PATTERNS = [
+# 定义标签规则：每个规则返回一个标签列表
+TAG_RULES = [
+    # 身体部位
+    (re.compile(r"(?i)head|neck|headshot|cranium"), ["head"]),
+    (re.compile(r"(?i)chest|torso(?!_)"), ["chest"]),
+    (re.compile(r"(?i)stomach|(?<=_)gut\b|hit_gut"), ["stomach"]),
+    (re.compile(r"(?i)pelvis|groin|gutshot"), ["pelvis"]),
+    (re.compile(r"(?i)left[_\-]?(?:arm|shoulder)|_larm\b|(?<=_)larm"), ["left_arm"]),
+    (re.compile(r"(?i)right[_\-]?(?:arm|shoulder)|_rarm\b|(?<=_)rarm"), ["right_arm"]),
+    (re.compile(r"(?i)left[_\-]?leg|_lleg\b|(?<=_)lleg"), ["left_leg"]),
+    (re.compile(r"(?i)right[_\-]?leg|_rleg\b|(?<=_)rleg"), ["right_leg"]),
+    (re.compile(r"(?i)legs\b"), ["left_leg", "right_leg"]),  # 复数双腿
     (
-        "bd_head",
-        re.compile(
-            r"(?i)(?:bd_death_)?head(?!shot)|headshot|(?:_head_|_head\.)|^16head\b"
-        ),
+        re.compile(r"(?i)backstab|(?<=_)back\.|^16back\b|shotgunback|slasher_back"),
+        ["back"],
     ),
-    ("bd_neck", re.compile(r"(?i)neck")),
-    (
-        "bd_larm",
-        re.compile(
-            r"(?i)left[_\-]?(?:arm|shoulder)|_larm\b|(?<=_)larm|^bd_death_leftarm"
-        ),
-    ),
-    (
-        "bd_rarm",
-        re.compile(
-            r"(?i)right[_\-]?(?:arm|shoulder)|_rarm\b|(?<=_)rarm|^bd_death_rightarm"
-        ),
-    ),
-    (
-        "bd_lleg",
-        re.compile(r"(?i)left[_\-]?leg|_lleg\b|(?<=_)lleg|legs|^bd_death_leftleg"),
-    ),  # 增加 legs
-    (
-        "bd_rleg",
-        re.compile(r"(?i)right[_\-]?leg|_rleg\b|(?<=_)rleg|^bd_death_rightleg"),
-    ),
-    ("bd_pelvis", re.compile(r"(?i)pelvis|groin|gutshot|^16gutshot\b")),
-    ("bd_back", re.compile(r"(?i)backstab|(?<=_)back\.|^16back\b")),  # 新增背部类别
-    (
-        "bd_torso",
-        re.compile(
-            r"(?i)(?:bd_death_)?torso|cod_\d+_torso|chest|stomach|(?<!\w)(?:16death[123]|16right|16left|16forward)\b|ex_mix_hit_gut"
-        ),
-    ),
-    ("crawling", re.compile(r"(?i)crawl")),
-    ("fire", re.compile(r"(?i)(?:fire|burn|flame|_onfire)")),
-    ("club", re.compile(r"(?i)(?:club\d|slasher)")),
-    ("exp", re.compile(r"(?i)(?:explosion|_exp_|flying|shotgun(?:back)?)")),
-    ("moving", re.compile(r"(?i)(?:running|_run|trip|roll|faceplant)(?!_?onfire)")),
-    ("bd_shotgun", re.compile(r"(?i)shotgun")),
-    ("writhing", re.compile(r"(?i)writh")),
-    ("ragdoll", re.compile(r"(?i)ragdoll")),
-    ("crouch_die", re.compile(r"(?i)crouch[_\-]?die")),
-    (
-        "dying",
-        re.compile(
-            r"(?i)(?:^dying\d|^Death_(?!Running)|^16crouch_die|bd_death_leg_[0-9]|_leg_0[5-8]|Death_11_0[123]|Death_10)"
-        ),
-    ),
-    ("UNKNOWN", re.compile(r".*")),
+    # 动作/姿态
+    (re.compile(r"(?i)death|die|dying"), ["death"]),
+    (re.compile(r"(?i)crawl"), ["crawling"]),
+    (re.compile(r"(?i)run|running"), ["running"]),
+    (re.compile(r"(?i)fall|flying|trip|explosion"), ["falling"]),
+    (re.compile(r"(?i)writh"), ["writhing"]),
+    (re.compile(r"(?i)ragdoll"), ["ragdoll"]),
+    (re.compile(r"(?i)crouch"), ["crouching"]),
+    # 伤害类型
+    (re.compile(r"(?i)shotgun"), ["shotgun"]),
+    (re.compile(r"(?i)explosion|_exp_"), ["explosion"]),
+    (re.compile(r"(?i)fire|burn|flame|_onfire"), ["fire"]),
+    (re.compile(r"(?i)slasher|backstab"), ["slash"]),
+    (re.compile(r"(?i)club\d"), ["blunt"]),
+    # 方向
+    (re.compile(r"(?i)front|forward|^16forward\b"), ["front"]),
+    (re.compile(r"(?i)back|backstab|^16back\b"), ["back"]),
+    (re.compile(r"(?i)left|^16left\b"), ["left"]),
+    (re.compile(r"(?i)right|^16right\b"), ["right"]),
+    # 特殊修饰
+    (re.compile(r"(?i)headshot"), ["headshot"]),
+    (re.compile(r"(?i)multi"), ["multi"]),
+    (re.compile(r"(?i)single"), ["single"]),
+    (re.compile(r"(?i)short"), ["short"]),
+    (re.compile(r"(?i)long"), ["long"]),
+    (re.compile(r"(?i)revive|getup"), ["revive"]),
+    (re.compile(r"(?i)idle"), ["idle"]),
 ]
 
 
-def classify_anim_file(filename: str) -> str:
-    for category, pattern in PATTERNS:
+def extract_tags(filename: str) -> set:
+    """从文件名提取标签集合"""
+    tags = set()
+    for pattern, tag_list in TAG_RULES:
         if pattern.search(filename):
-            return category
-    return "UNKNOWN"
+            tags.update(tag_list)
+    # 默认标签
+    if "death" not in tags and "crawling" not in tags and "ragdoll" not in tags:
+        tags.add("death")  # 大部分是死亡动画
+    if not any(
+        t in tags
+        for t in [
+            "head",
+            "chest",
+            "stomach",
+            "pelvis",
+            "left_arm",
+            "right_arm",
+            "left_leg",
+            "right_leg",
+            "back",
+        ]
+    ):
+        tags.add("full_body")
+    if (
+        "bullet" not in tags
+        and "shotgun" not in tags
+        and "explosion" not in tags
+        and "fire" not in tags
+        and "slash" not in tags
+        and "blunt" not in tags
+    ):
+        tags.add("bullet")  # 默认枪弹
+    return tags
 
 
-def categorize_files(directory: str) -> dict:
-    categories = defaultdict(list)
-    for entry in os.listdir(directory):
-        if entry.lower().endswith(".smd"):
-            cat = classify_anim_file(entry)
-            categories[cat].append(entry)
-    return dict(categories)
-
-
-def print_summary(categories: dict):
-    total = sum(len(files) for files in categories.values())
-    print(f"总文件数: {total}\n")
-    order = [
-        "bd_head",
-        "bd_neck",
-        "bd_larm",
-        "bd_rarm",
-        "bd_lleg",
-        "bd_rleg",
-        "bd_pelvis",
-        "bd_back",
-        "bd_torso",
-        "crawling",
-        "fire",
-        "club",
-        "exp",
-        "moving",
-        "bd_shotgun",
-        "writhing",
-        "ragdoll",
-        "crouch_die",
-        "dying",
-        "UNKNOWN",
-    ]
-    for cat in order:
-        files = categories.get(cat, [])
-        if files:
-            print(f"{cat:12} : {len(files):3} 个文件")
-            # 可选：打印前几个示例
-            # for f in sorted(files)[:3]:
-            #     print(f"             - {f}")
+def process_directory(directory: str) -> dict:
+    """返回 {文件名: [标签列表]} 的字典"""
+    result = {}
+    for f in os.listdir(directory):
+        if f.lower().endswith(".smd"):
+            result[f] = sorted(extract_tags(f))
+    return result
 
 
 if __name__ == "__main__":
     target_dir = r"C:\SteamLibrary\steamapps\common\GarrysMod\garrysmod\addons\backup\eda_3279383994\gmpublisher\models\brutal_deaths\decompiled 0.74\model_anim_modify_anims"
     if os.path.isdir(target_dir):
-        result = categorize_files(target_dir)
-        print_summary(result)
-        with open("anim_classification_fixed.txt", "w", encoding="utf-8") as f:
-            for cat, files in sorted(result.items()):
-                f.write(f"\n[{cat}] ({len(files)} files)\n")
-                for name in sorted(files):
-                    f.write(f"  {name}\n")
-        print("\n详细列表已保存至 anim_classification_fixed.txt")
+        tags_dict = process_directory(target_dir)
+        # 输出为 JSON
+        with open("anim_tags.json", "w", encoding="utf-8") as f:
+            json.dump(tags_dict, f, indent=2, ensure_ascii=False)
+        # 输出为 Lua 表
+        with open("anim_tags.lua", "w", encoding="utf-8") as f:
+            f.write("local animTags = {\n")
+            for name, tags in sorted(tags_dict.items()):
+                tag_str = ", ".join(f'"{t}"' for t in tags)
+                f.write(f'    ["{name}"] = {{{tag_str}}},\n')
+            f.write("}\nreturn animTags\n")
+        print(f"已处理 {len(tags_dict)} 个文件，标签数据已保存。")
     else:
-        print("目录不存在，请检查路径。")
+        print("目录不存在")
