@@ -9,3 +9,13 @@ end)
 hook.Add("ScalePlayerDamage", "EDAE_ScalePlayerDamage", function(ply, hitgroup, dmginfo)
     recordDamageInfo(ply, hitgroup, dmginfo)
 end)
+
+hook.Add("PlayerDeath", "EDAE_PlayerDeath", function(ply)
+    ply:SetShouldServerRagdoll(true)
+end)
+hook.Add("PostPlayerDeath", "EDAE_PostPlayerDeath", function(ply)
+    local rag = ply:GetRagdollEntity()
+    if rag and IsValid(rag) then
+        rag:Remove()
+    end
+end)
