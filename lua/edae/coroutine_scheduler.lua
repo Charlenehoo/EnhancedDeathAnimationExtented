@@ -8,24 +8,24 @@ end
 local Constants = include("autorun/edae_sh_constants.lua")
 
 local Scheduler = {}
-Scheduler._frameWaitCoroutines = {} -- { co1, co2, ... }                             -- 等待下一帧的协程数组
-Scheduler._eventWaitCoroutines = {} -- { eventName1 = { co1, co2, ... }, ... }       -- 每个事件对应的等待协程列表
-Scheduler._pendingEvents = {}       -- { eventName1 = { args1, args2, ... }, ... }   -- 每个事件对应的待处理参数队列, 密集表中每一个 args 来自一次发射
-Scheduler._registeredEvents = {}    -- { eventName1 = true, eventName2 = true, ... } -- 标记已注册监听的事件
+Scheduler._activeCoros = {}         -- { co1, co2, ... }                             -- 等待下一帧的协程数组
+Scheduler._eventNameToCorosMap = {} -- { eventName1 = { co1, co2, ... }, ... }       -- 每个事件对应的等待协程列表
+Scheduler._eventNameToQueueMap = {} -- { eventName1 = { args1, args2, ... }, ... }   -- 每个事件对应的待处理参数队列, 密集表中每一个 args 来自一次发射
+Scheduler._isRegistered = {}        -- { eventName1 = true, eventName2 = true, ... } -- 标记已注册监听的事件
 
-local function _handleYield(co, yielded)
-    if coroutine.status(co) == "dead" then return end
+function Scheduler:_handleYield(coro, msg)
+    if coroutine.status(coro) == "dead" then return end
 
-    if yielded == nil then
-        table.insert(Scheduler._frameWaitCoroutines, co)
-    elseif type(yielded) == "table" and yielded.type == "event" then
-        local eventName = yielded.name
+    if msg == nil then
+        table.insert(self._activeCoros, coro)
+    elseif type(msg) == "table" and msg.type == "event" then
+        local eventName = msg.name
 
-        Scheduler._eventWaitCoroutines[eventName] = Scheduler._eventWaitCoroutines[eventName] or {}
-        table.insert(Scheduler._eventWaitCoroutines[eventName], co)
+        Scheduler._eventNameToCorosMap[eventName] = Scheduler._eventNameToCorosMap[eventName] or {}
+        table.insert(Scheduler._eventNameToCorosMap[eventName], coro)
 
-        if not Scheduler._registeredEvents[eventName] then
-            Scheduler._registeredEvents[eventName] = true
+        if not Scheduler._isRegistered[eventName] then
+            Scheduler._isRegistered[eventName] = true
 
             local identifier = Constants.ADDON_NAME .. MODULE_NAME .. eventName
             hook.Add(eventName, identifier, function(...)
